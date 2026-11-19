@@ -88,7 +88,7 @@ final class AudioPlayer: ObservableObject {
         }
 
         // 缓冲恢复后自动继续播放（直播流网络抖动时有用）
-        bufferObservation = item.observe(\.playbackLikelyToKeepUp, options: [.new]) { [weak self] item, _ in
+        bufferObservation = item.observe(\.isPlaybackLikelyToKeepUp, options: [.new]) { [weak self] item, _ in
             Task { @MainActor in
                 guard let self, self.activeID == station.id else { return }
                 if item.isPlaybackLikelyToKeepUp,
