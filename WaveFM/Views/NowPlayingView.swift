@@ -115,7 +115,7 @@ struct NowPlayingView: View {
                             .frame(width: 76, height: 76)
                             .buttonStyle(.plain)
                             Button {
-                                if let station { store.toggleFavorite(station) }
+                                store.toggleFavorite(station)
                             } label: {
                                 Image(systemName: store.isFavorite(station) ? "star.fill" : "star")
                                     .font(.system(size: 28))
