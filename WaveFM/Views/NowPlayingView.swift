@@ -117,9 +117,9 @@ struct NowPlayingView: View {
                             Button {
                                 if let station { store.toggleFavorite(station) }
                             } label: {
-                                Image(systemName: station.map { store.isFavorite($0) ? "star.fill" : "star" } ?? "star")
+                                Image(systemName: store.isFavorite(station) ? "star.fill" : "star")
                                     .font(.system(size: 28))
-                                    .foregroundStyle((station.map { store.isFavorite($0) }) == true ? .yellow : Theme.textSecondary)
+                                    .foregroundStyle(store.isFavorite(station) ? Color.yellow : Theme.textSecondary)
                             }
                         }
                         .buttonStyle(.plain)

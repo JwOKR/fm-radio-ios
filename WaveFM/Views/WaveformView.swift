@@ -23,7 +23,7 @@ struct WaveformView: View {
                 }
             }
         }
-        .onChange(of: active) { _, newValue in
+        .onChange(of: active) { newValue in
             if newValue {
                 withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: true)) {
                     phase = 1
