@@ -24,12 +24,10 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: WaveFM
-        type: group
-        excludes:
-          - Info.plist
-          - Assets.xcassets
-          - Resources/stations.json
+      - path: WaveFM/WaveFMApp.swift
+      - path: WaveFM/Models
+      - path: WaveFM/Audio
+      - path: WaveFM/Views
     resources:
       - path: WaveFM/Assets.xcassets
       - path: WaveFM/Resources/stations.json
