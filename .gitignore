@@ -1,8 +1,7 @@
-# Xcode
-*.xcworkspace/
-WaveFM.xcodeproj/
+# Build
 build/
 DerivedData/
+artifacts/
 
 # macOS
 .DS_Store

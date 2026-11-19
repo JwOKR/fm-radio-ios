@@ -69,7 +69,14 @@ Xcode 中选择你的 Team 签名后即可真机运行。
 
 ## 修改电台音源
 
-编辑 `WaveFM/Resources/stations.json`，字段说明：
+电台数据已**内置在 `WaveFM/Models/StationStore.swift`**（`builtinStations`），同时保留 `WaveFM/Resources/stations.json` 作为可选覆盖源（若打包进 bundle 会优先读取）。
+
+两种方式二选一：
+
+1. **改代码**：编辑 `StationStore.swift` 中的 `builtinStations` 数组
+2. **改 JSON**：编辑 `stations.json`，并确保 XcodeGen 正确打包资源
+
+字段格式：
 
 ```json
 {
