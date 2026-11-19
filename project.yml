@@ -1,0 +1,51 @@
+name: WaveFM
+options:
+  minimumXcodeGenVersion: 2.36.0
+  deploymentTarget:
+    iOS: "16.0"
+  groupSortPosition: top
+  indentWidth: 2
+
+settings:
+  base:
+    PRODUCT_NAME: WaveFM
+    PRODUCT_BUNDLE_IDENTIFIER: com.jwokr.wavefm
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: 5.9
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: ""
+    ENABLE_BITCODE: NO
+
+targets:
+  WaveFM:
+    type: application
+    platform: iOS
+    sources:
+      - path: WaveFM
+        type: group
+        excludes:
+          - Info.plist
+          - Assets.xcassets
+          - Resources/stations.json
+    resources:
+      - path: WaveFM/Assets.xcassets
+      - path: WaveFM/Resources/stations.json
+    info:
+      path: WaveFM/Info.plist
+      properties:
+        CFBundleDisplayName: 波形电台
+        CFBundleName: WaveFM
+        LSRequiresIPhoneOS: true
+        UIRequiredDeviceCapabilities:
+          - arm64
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UILaunchScreen: {}
+        UIBackgroundModes:
+          - audio
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+        ITSAppUsesNonExemptEncryption: false

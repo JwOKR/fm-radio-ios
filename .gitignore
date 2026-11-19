@@ -1,0 +1,12 @@
+# Xcode
+*.xcworkspace/
+WaveFM.xcodeproj/
+build/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Secrets
+*.p12
+*.mobileprovision
