@@ -14,9 +14,11 @@ final class AudioPlayer: ObservableObject {
 
     private let player = AVPlayer()
     private var statusObservation: NSKeyValueObservation?
+    private var bufferObservation: NSKeyValueObservation?
     private var rateObservation: NSKeyValueObservation?
-    private var timeObserver: Any?
+    private var timeoutTask: Task<Void, Never>?
     private var hasConfiguredSession = false
+    private var activeID: String?
 
     // MARK: - 生命周期
 
@@ -44,28 +46,66 @@ final class AudioPlayer: ObservableObject {
             return
         }
 
+        // 清理上一次播放的观察与超时
+        timeoutTask?.cancel()
         statusObservation?.invalidate()
+        bufferObservation?.invalidate()
         player.pause()
+
+        activeID = station.id
         current = station
         isBuffering = true
         statusMessage = nil
+        // 首次点击时确保音频会话已激活（configure 的 .task 可能有竞态）
+        setupAudioSession()
         updateNowPlayingInfo(for: station)
 
         let item = AVPlayerItem(url: url)
+
+        // ★ 关键修复：必须先把 item 挂到 player 上，AVPlayerItem 才会真正发起网络加载。
+        //   旧版先观察 status 再挂载，孤立的 item 会永远停在 .unknown → 一直转圈。
+        player.replaceCurrentItem(with: item)
+
         statusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
             Task { @MainActor in
-                guard let self, self.current?.id == station.id else { return }
+                guard let self, self.activeID == station.id else { return }
                 switch item.status {
                 case .readyToPlay:
                     self.isBuffering = false
-                    self.player.replaceCurrentItem(with: item)
+                    self.statusMessage = nil
+                    self.timeoutTask?.cancel()
                     self.player.play()
                 case .failed:
                     self.isBuffering = false
-                    self.statusMessage = "无法连接该电台，请切换其他音源"
-                default:
+                    let detail = item.error?.localizedDescription ?? "未知错误"
+                    self.statusMessage = "连接失败：\(detail)"
+                case .unknown:
                     self.isBuffering = true
+                @unknown default:
+                    break
                 }
+            }
+        }
+
+        // 缓冲恢复后自动继续播放（直播流网络抖动时有用）
+        bufferObservation = item.observe(\.playbackLikelyToKeepUp, options: [.new]) { [weak self] item, _ in
+            Task { @MainActor in
+                guard let self, self.activeID == station.id else { return }
+                if item.isPlaybackLikelyToKeepUp,
+                   item.status == .readyToPlay,
+                   self.player.rate < 0.01 {
+                    self.player.play()
+                }
+            }
+        }
+
+        // 20 秒超时：避免无限转圈，并给出明确诊断信息
+        timeoutTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 20_000_000_000)
+            guard !Task.isCancelled, self.activeID == station.id else { return }
+            if item.status != .readyToPlay {
+                self.isBuffering = false
+                self.statusMessage = "连接超时：无法访问该音源，请检查网络或切换其他电台"
             }
         }
     }
@@ -81,12 +121,16 @@ final class AudioPlayer: ObservableObject {
     }
 
     func stop() {
+        timeoutTask?.cancel()
+        statusObservation?.invalidate()
+        bufferObservation?.invalidate()
         player.pause()
         player.replaceCurrentItem(with: nil)
-        statusObservation?.invalidate()
+        activeID = nil
         current = nil
         isPlaying = false
         isBuffering = false
+        statusMessage = nil
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 
